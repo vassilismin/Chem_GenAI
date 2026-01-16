@@ -8,44 +8,46 @@ class GuacaMolTrainer:
         self.dataloader = dataloader
         self.device = device
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
+        self.pad_idx = 0  # For ignoring padding in loss
 
-        def train_epoch(self):
-            """Train for one epoch."""
-            self.model.train()
-            total_loss = 0.0
+    def train_epoch(self):
+        """Train for one epoch."""
+        self.model.train()
+        total_loss = 0.0
 
-            for batch in self.dataloader:
-                loss = self.train_step(batch)
-                total_loss += loss.item()
+        for batch in self.dataloader:
+            loss = self.train_step(batch)
+            total_loss += loss
 
-            avg_loss = total_loss / len(self.dataloader)
-            return avg_loss
+        avg_loss = total_loss / len(self.dataloader)
+        return avg_loss
 
-        def train_step(self, batch):
-            """Single training step."""
-            batch = batch.to(self.device)
-            inputs = batch[:, :-1]
-            targets = batch[:, 1:]
-            self.optimizer.zero_grad()
-            hidden = self.model.init_hidden(batch.size(0), self.device)
-            output, _ = self.model(inputs, hidden)
-            loss = F.cross_entropy(
-                output.reshape(-1, output.size(-1)),
-                targets.reshape(-1),
-                ignore_index=self.pad_idx,
-            )
+    def train_step(self, batch):
+        """Single training step."""
+        batch = batch.to(self.device)
+        inputs = batch[:, :-1]
+        targets = batch[:, 1:]
+        self.optimizer.zero_grad()
+        hidden = self.model.init_hidden(batch.size(0), self.device)
+        output, _ = self.model(inputs, hidden)
+        loss = F.cross_entropy(
+            output.reshape(-1, output.size(-1)),
+            targets.reshape(-1),
+            ignore_index=self.pad_idx,
+        )
 
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
-            self.optimizer.step()
-            return loss.item()
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
+        self.optimizer.step()
+        return loss.item()
 
-        def fit(self, epochs):
-            """Train the model for a number of epochs"""
-            for epoch in range(epochs):
-                avg_loss = self.train_epoch()
-                print(f"Epoch {epoch + 1}/{epochs}, Loss: {avg_loss:.4f}")
+    def fit(self, epochs):
+        """Train the model for a number of epochs"""
+        for epoch in range(epochs):
+            print(f"Epoch {epoch + 1}/{epochs} starting...")
+            avg_loss = self.train_epoch()
+            print(f"Epoch {epoch + 1}/{epochs} completed - Loss: {avg_loss:.4f}\n")
 
-        def save(self, path):
-            """Save the model state."""
-            torch.save(self.model.state_dict(), path)
+    def save(self, path):
+        """Save the model state."""
+        torch.save(self.model.state_dict(), path)
