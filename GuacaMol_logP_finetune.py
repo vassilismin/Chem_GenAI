@@ -12,6 +12,7 @@ config_path = f"{model_dir}/model_final_0.473.json"
 
 # Setup
 device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"Using device: {device}")
 batch_size = 128
 data_path = "data/lipophilicity_astrazeneca.tab"
 logp_range = (1.5, 3.0)
@@ -53,7 +54,7 @@ print(f"Batches per epoch: {len(dataloader)}")
 
 # Initialize Trainer
 trainer = GuacaMolTrainer(model, dataloader, device=device, lr=1e-4)
-trainer.fit(epochs=3)
+trainer.fit(epochs=10)
 # Save fine-tuned model
 trainer.save("models/lstm_guacamol/finetuned_model.pt")
 print("Fine-tuned model saved")
