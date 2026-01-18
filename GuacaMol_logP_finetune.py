@@ -12,7 +12,7 @@ config_path = f"{model_dir}/model_final_0.473.json"
 
 # Setup
 device = "cuda" if torch.cuda.is_available() else "cpu"
-batch_size = 30
+batch_size = 128
 data_path = "data/lipophilicity_astrazeneca.tab"
 logp_range = (1.5, 3.0)
 

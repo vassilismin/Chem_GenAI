@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import time
 
 
 class GuacaMolTrainer:
@@ -43,10 +44,19 @@ class GuacaMolTrainer:
 
     def fit(self, epochs):
         """Train the model for a number of epochs"""
+        total_start = time.time()
+
         for epoch in range(epochs):
             print(f"Epoch {epoch + 1}/{epochs} starting...")
+            epoch_start = time.time()
+
             avg_loss = self.train_epoch()
-            print(f"Epoch {epoch + 1}/{epochs} completed - Loss: {avg_loss:.4f}\n")
+
+            epoch_time = (time.time() - epoch_start) / 60
+            print(f"Epoch {epoch + 1}/{epochs} completed - Loss: {avg_loss:.4f} - Time: {epoch_time:.2f} min\n")
+
+        total_time = (time.time() - total_start) / 60
+        print(f"Training completed - Total time: {total_time:.2f} min")
 
     def save(self, path):
         """Save the model state."""
