@@ -3,14 +3,23 @@ from torch.utils.data import DataLoader
 from .dataset import SmilesDataset, get_collate_fn
 
 
-def create_dataloader(data_path, char_dict, batch_size=64, logp_range=(1.5, 3.0)):
+def create_dataloader(
+    data_path, smiles_col, char_dict, batch_size=64, logp_range=(1.5, 3.0)
+):
+    # Check if data file prefix is either txt or csv
+    sep = None
+    if data_path.endswith(".tab"):
+        sep = "\t"
+    elif data_path.endswith(".csv"):
+        sep = ","
+
     # Load data
-    df = pd.read_csv(data_path, sep="\t")
+    df = pd.read_csv(data_path, sep=sep)
 
     # Filter by logP range
     min_logp, max_logp = logp_range
-    filtered = df[(df["Y"] >= min_logp) & (df["Y"] <= max_logp)]
-    smiles_list = filtered["Drug"].tolist()
+    filtered = df[(df["LogP"] >= min_logp) & (df["LogP"] <= max_logp)]
+    smiles_list = filtered[smiles_col].tolist()
 
     # Create dataset and loader
     dataset = SmilesDataset(smiles_list, char_dict)

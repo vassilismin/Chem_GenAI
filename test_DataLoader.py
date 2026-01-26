@@ -1,11 +1,16 @@
 from utils.data_loader import create_dataloader
 from models.lstm_guacamol.smiles_char_dict import SmilesCharDictionary
 
-data_path = "data/lipophilicity_astrazeneca.tab"
+# tdc_data_path = "data/lipophilicity_astrazeneca.tab"
+chembl_data_path = "data/chembl_logp_0_2.csv"
 char_dict = SmilesCharDictionary()
 
 dataloader = create_dataloader(
-    data_path=data_path, char_dict=char_dict, batch_size=64, logp_range=(1.5, 3.0)
+    data_path=chembl_data_path,
+    smiles_col="canonical_smiles",
+    char_dict=char_dict,
+    batch_size=64,
+    logp_range=(0.0, 2.0),
 )
 
 # --- Validations ---

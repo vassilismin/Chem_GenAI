@@ -13,9 +13,9 @@ config_path = f"{model_dir}/model_final_0.473.json"
 # Setup
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Using device: {device}")
-batch_size = 128
-data_path = "data/lipophilicity_astrazeneca.tab"
-logp_range = (1.5, 3.0)
+batch_size = 64
+data_path = "data/chembl_logp.csv"
+logp_range = (0.0, 1.0)
 
 # Load Vocabulary
 char_dict = SmilesCharDictionary()
@@ -41,9 +41,25 @@ if not result.missing_keys and not result.unexpected_keys:
     print("Model loaded successfully with no missing or unexpected keys.")
     print("Pre-trained model loaded")
 
+# Freeze embedding layer
+for param in model.encoder.parameters():
+    param.requires_grad = False
+
+# Freeze all LSTM layers (l0, l1, l2)
+# for param in model.rnn.parameters():
+#     param.requires_grad = False
+
+# Verify what's frozen
+trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+total = sum(p.numel() for p in model.parameters())
+print(
+    f"Trainable parameters: {trainable:,} / {total:,} ({100 * trainable / total:.1f}%)"
+)
+
 # Create DataLoader with logP filtering
 dataloader = create_dataloader(
     data_path=data_path,
+    smiles_col="canonical_smiles",
     char_dict=char_dict,
     batch_size=batch_size,
     logp_range=logp_range,
@@ -55,6 +71,7 @@ print(f"Batches per epoch: {len(dataloader)}")
 # Initialize Trainer
 trainer = GuacaMolTrainer(model, dataloader, device=device, lr=1e-4)
 trainer.fit(epochs=10)
+trainer.fit(epochs=10)
 # Save fine-tuned model
-trainer.save("models/lstm_guacamol/finetuned_model.pt")
+trainer.save("models/lstm_guacamol/pretrained_model/finetuned_model.pt")
 print("Fine-tuned model saved")
